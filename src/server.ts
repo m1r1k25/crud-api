@@ -1,6 +1,7 @@
 import http from 'http'
 import dotenv from "dotenv";
-import controller from './controller';
+import controller from './users.controller';
+import { isUrlHaveUuid } from './utils';
 
 dotenv.config();
 
@@ -16,14 +17,25 @@ const server = http.createServer(async (req, res) => {
       case 'GET':
       if (url === baseUrl) {
         controller.showAllUsers(res);
-      } 
-
+      } else if (isUrlHaveUuid(url)) {
+        // if (controller.isUuidValid(url)) {
+        //   controller.showUser(res, url);
+        // } else {
+        //   controller.showWrongIdMsg(res);
+        // }
+      } else {
+        controller.showWrongUrlMsg(res);
+      }
         break;
-  
+    default:
+      controller.showMethodErr(res);
+      break;
     }
     res.end()
-  } catch(err: any) {
-    console.log(err.message)
+  } catch(err) {
+    if (err) {
+      controller.showServerErrMsg(res);
+    }
   }
 })
 
