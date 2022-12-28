@@ -1,22 +1,18 @@
 import { IUser } from "./interfaces";
 
 class UserService {
-  public data: IUser[];
+  data: IUser[];
 
   constructor() {
     this.data = [];
   }
 
-  public getUser = (uuid: string): IUser | null => {
-    let result = null;
+  getUser = (uuid: string | undefined): IUser | null => {
+    return this.data.find((id) => id) as IUser
+  };
 
-    this.data.forEach((user) => {
-      if (user.id === uuid) {
-        result = user;
-      }
-    });
-
-    return result;
+  public addNewUser = (user: IUser | undefined): void => {
+    this.data.push(user as IUser);
   };
   
 }

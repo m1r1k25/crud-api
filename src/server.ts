@@ -1,40 +1,61 @@
 import http from 'http'
 import dotenv from "dotenv";
-import controller from './users.controller';
-import { isUrlHaveUuid } from './utils';
+
+import userController from './users.controller';
+import { baseUrl } from './constants';
+import { isUuidValid } from './utils';
 
 dotenv.config();
 
 const PORT = process.env.PORT || "4000";
 
-const baseUrl = '/api/users'
-
 const server = http.createServer(async (req, res) => {
   try {
     const url: string | undefined = req.url;
     const method: string | undefined = req.method;
+
     switch(method) {
       case 'GET':
       if (url === baseUrl) {
-        controller.showAllUsers(res);
-      } else if (isUrlHaveUuid(url)) {
-        // if (controller.isUuidValid(url)) {
-        //   controller.showUser(res, url);
-        // } else {
-        //   controller.showWrongIdMsg(res);
-        // }
+        userController.showAllUsers(res);
+      } else if (url?.startsWith(baseUrl + '/')) {
+        if (isUuidValid(url)) {
+          userController.showUser(res, url);
+        } else {
+          userController.showWrongIdMsg(res);
+        }
       } else {
-        controller.showWrongUrlMsg(res);
+        userController.showWrongUrlMsg(res);
       }
-        break;
+      break;
+
+      case 'POST': 
+      if (url === "/api/users") {
+        userController.createUser(req, res);
+      } else {
+        userController.showWrongUrlMsg(res);
+      }
+      break;  
+
+      case 'PUT':
+      if (url?.startsWith(baseUrl + '/')) {
+        if (isUuidValid(url)) {
+          //userController.updateUser(res, url);
+        } else {
+          //userController.showWrongIdMsg(res);
+        }
+      } else {
+        userController.showWrongUrlMsg(res);
+      }
+      break;
+        
     default:
-      controller.showMethodErr(res);
+      userController.showMethodErr(res);
       break;
     }
-    res.end()
   } catch(err) {
     if (err) {
-      controller.showServerErrMsg(res);
+      userController.showServerErrMsg(res);
     }
   }
 })
