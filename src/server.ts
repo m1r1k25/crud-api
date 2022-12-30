@@ -40,9 +40,9 @@ const server = http.createServer(async (req, res) => {
       case 'PUT':
       if (url?.startsWith(baseUrl + '/')) {
         if (isUuidValid(url)) {
-          //userController.updateUser(res, url);
+          userController.updateUser(req, res, url);
         } else {
-          //userController.showWrongIdMsg(res);
+          userController.showWrongIdMsg(res);
         }
       } else {
         userController.showWrongUrlMsg(res);

@@ -4,6 +4,8 @@ import { Fields, StatusCodes } from './constants';
 import { IUser } from './interfaces';
 import messages from './messages';
 
+export const getUuidFromUrl = (url: string | undefined) => url?.split('/').at(-1)
+
 export const isUuidValid = (url: string | undefined): boolean => {
   if(!url) return false
   const uuidFromUrl: string | undefined = url.split("/").pop()
@@ -26,12 +28,38 @@ export const isStringArr = (arr: object): boolean => {
   }
 };
 
-export const parseReqBody = (res: ServerResponse, reqBody: string,): IUser | undefined => {
+export const parseReqBody = (res: ServerResponse, reqBody: string, isUpdate: boolean = false, user: IUser | null = null): IUser | undefined => {
   try {
     const parsedJSON: IUser = JSON.parse(reqBody);
     const objKeys: string[] = Object.keys(parsedJSON);
 
-    if (
+    if (isUpdate) {
+      const userToUpdate: IUser | null = user;
+
+      if (userToUpdate !== null) {
+        if (
+          objKeys.includes(Fields.USERNAME) &&
+          typeof parsedJSON[Fields.USERNAME] === "string"
+        ) {
+          userToUpdate[Fields.USERNAME] = parsedJSON[Fields.USERNAME];
+        }
+
+        if (
+          objKeys.includes(Fields.AGE) &&
+          typeof parsedJSON[Fields.AGE] === "number"
+        ) {
+          userToUpdate[Fields.AGE] = parsedJSON[Fields.AGE];
+        }
+
+        if (
+          objKeys.includes(Fields.HOBBIES) &&
+          isStringArr(parsedJSON[Fields.HOBBIES])
+        ) {
+          userToUpdate[Fields.HOBBIES] = parsedJSON[Fields.HOBBIES];
+        }
+        return userToUpdate;
+      }
+    } else if (
       objKeys.includes(Fields.USERNAME) &&
       typeof parsedJSON[Fields.USERNAME] === "string" &&
       objKeys.includes(Fields.AGE) &&

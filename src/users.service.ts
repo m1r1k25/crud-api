@@ -8,11 +8,19 @@ class UserService {
   }
 
   getUser = (uuid: string | undefined): IUser | null => {
-    return this.data.find((id) => id) as IUser
+    return this.data.find((item) => uuid === item.id) as IUser
   };
 
-  public addNewUser = (user: IUser | undefined): void => {
+  addNewUser = (user: IUser | undefined): void => {
     this.data.push(user as IUser);
+  };
+
+  updateUser = (updatingUser: IUser | undefined): void => {
+    this.data.forEach((user) => {
+      if (user.id === updatingUser?.id) {
+        user = updatingUser;
+      }
+    });
   };
   
 }

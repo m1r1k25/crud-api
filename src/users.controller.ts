@@ -5,7 +5,7 @@ import { StatusCodes } from './constants';
 import messages from './messages';
 import userService from './users.service';
 import { IUser } from './interfaces';
-import { parseReqBody } from './utils';
+import { getUuidFromUrl, parseReqBody } from './utils';
 
 class UserController {
   showAllUsers = async (res: ServerResponse): Promise<void> => {
@@ -50,14 +50,14 @@ class UserController {
       req.on("data", (chunk) => {
         reqBody += chunk.toString();
       }).on("end", () => {
-        const newUser: IUser | undefined = parseReqBody(res, reqBody);
+        const newUser: IUser | undefined = parseReqBody(res, reqBody, false);
         const id: string | undefined = newUser?.id;
 
         if (newUser !== undefined && id !== undefined) {
           userService.addNewUser(newUser);
         
           res.writeHead(StatusCodes.CREATED, { "Content-type": "application/json" });
-          res.write(JSON.stringify({code: StatusCodes.CREATED, ...userService.getUser(id)}));
+          res.write(JSON.stringify(userService.getUser(id)));
           res.end();
         }
       });
@@ -68,30 +68,37 @@ class UserController {
     }
   };
 
-  updateUser = async(req: events.EventEmitter, res: ServerResponse): Promise<void> => {
-    // try {
-    //   let reqBody: string = "";
+  updateUser = async(req: events.EventEmitter, res: ServerResponse, url: string | undefined): Promise<void> => {
+    try {
+      if(url) {
+        const uuid = getUuidFromUrl(url);
+        const user = userService.getUser(uuid);
 
-    //   req.on("data", (chunk) => {
-    //     reqBody += chunk.toString();
-    //   }).on("end", () => {
-    //     const newUser: IUser | undefined = parseReqBody(res, reqBody);
-    //     const id: string | undefined = newUser?.id;
+        if(user) {
+          let reqBody: string = '';
 
-    //     if (newUser !== undefined && id !== undefined) {
-    //       userService.addNewUser(newUser);
-        
-    //       res.writeHead(StatusCodes.CREATED, { "Content-type": "application/json" });
-    //       res.write(JSON.stringify({code: StatusCodes.CREATED, ...userService.getUser(id)}));
-    //       res.end();
-    //     }
-    //   });
+          req.on("data", (chunk) => {
+            reqBody += chunk.toString();
+          }).on("end", () => {
+            const updatingUser: IUser | undefined = parseReqBody(res, reqBody, true, user);
+            const id: string | undefined = updatingUser?.id;
+    
+            if (updatingUser !== undefined && id !== undefined) {
+              userService.updateUser(updatingUser);
+            
+              res.writeHead(StatusCodes.OK, { "Content-type": "application/json" });
+              res.write(JSON.stringify(userService.getUser(id)));
+              res.end();
+            }
+          });
+        }
+      }
       
-    // } catch(err) {
-    //   if (err) {
-    //     this.showServerErrMsg(res);
-    //   }
-    // }
+    } catch(err) {
+      if (err) {
+        this.showServerErrMsg(res);
+      }
+    }  
   }
 
   showWrongIdMsg = (res: ServerResponse): void => {
