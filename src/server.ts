@@ -48,6 +48,18 @@ const server = http.createServer(async (req, res) => {
         userController.showWrongUrlMsg(res);
       }
       break;
+
+      case 'DELETE':
+      if (url?.startsWith(baseUrl + '/')) {
+        if (isUuidValid(url)) {
+          userController.deleteUser(req, res, url);
+        } else {
+          userController.showWrongIdMsg(res);
+        }
+      } else {
+        userController.showWrongUrlMsg(res);
+      }
+      break;
         
     default:
       userController.showMethodErr(res);

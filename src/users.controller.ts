@@ -101,6 +101,31 @@ class UserController {
     }  
   }
 
+  deleteUser = async(req: events.EventEmitter, res: ServerResponse, url: string | undefined): Promise<void> => {
+    try {
+      if(url) {
+        const uuid = getUuidFromUrl(url);
+        const user = userService.getUser(uuid);
+
+        if (user) {
+          userService.deleteUser(user);
+
+          res.writeHead(204, { "Content-type": "application/json" });
+          res.end();
+        } else {
+          res.writeHead(404, { "Content-type": "application/json" });
+          res.write(JSON.stringify({ message: messages.userNotExist }));
+          res.end();
+        }
+
+      }
+    } catch(err) {
+      if (err) {
+        this.showServerErrMsg(res);
+      }
+    }
+  }
+
   showWrongIdMsg = (res: ServerResponse): void => {
     res.writeHead(StatusCodes.BAD_REQUEST, { "Content-type": "application/json" });
     res.write(JSON.stringify({ code: StatusCodes.BAD_REQUEST, message: messages.incorrectId }));

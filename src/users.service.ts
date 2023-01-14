@@ -22,6 +22,10 @@ class UserService {
       }
     });
   };
+
+  deleteUser = (deletingUser: IUser | undefined): void => {
+    this.data.filter((user) => user.id !== deletingUser?.id);
+  };
   
 }
 
